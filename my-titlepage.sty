@@ -1,6 +1,5 @@
 \RequirePackage[absolute]{textpos}
 \RequirePackage{graphicx}
-\RequirePackage{fancyhdr}
 \RequirePackage{xparse}
 \RequirePackage{expl3}
 \RequirePackage{xcolor}
@@ -83,13 +82,21 @@
     \group_end:
 }
 
+\msg_new:nnn {mtp} {nothispagestyle} {command\ "\textbackslash thispagestyle" does\ not\ exist.\ Please\ load\ fancyhdr\ or\ similar\ packages.}
+
 \cs_new:Npn \mtp_make_title:n #1 {
-    \clist_if_in:NnTF \c_mtp_templates {#1} {
-        \mtp_make_title_detail:n {#1}
+    \cs_if_exist:NTF \thispagestyle {
+        \clist_if_in:NnTF \c_mtp_templates {#1} {
+            \mtp_make_title_detail:n {#1}
+        } {
+            {\color{red} NO~TEMPLATE~ERROR}
+            \msg_error:nnn {mytitlepage} {notemplate} {#1}
+        }
     } {
-        {\color{red} NO~TEMPLATE~ERROR}
-        \msg_error:nnn {mytitlepage} {notemplate} {#1}
+        {\color{red} PACKAGE~ERROR}
+        \msg_error:nn {mtp} {nothispagestyle}
     }
+    
 }
 
 \cs_new:Npn \mtp_make_title_detail:n #1 {
@@ -140,7 +147,6 @@
             \end{flushright}
         }
     }
-    
     
     \group_end:
     \null\newpage
