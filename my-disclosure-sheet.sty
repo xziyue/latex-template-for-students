@@ -88,15 +88,16 @@
     \parbox{\linewidth}{
         \tl_use:N \mdsassertiontext
         
-        \begin{flushright}
-            \begin{minipage}{0.5\linewidth}
+        \newline
+        \begin{minipage}{\linewidth}
+            \begin{flushright}
                 \begin{tabular}{rl}
                     Signature: & \tl_use:N \g_author_name_tl \\
                     Date: & \DTMsetup{useregional}\DTMtryregional{en}{GB}\DTMToday
                 \end{tabular}
-            \end{minipage}
-        \end{flushright}
-        
+            \end{flushright}
+        \end{minipage}
+
         {
             \tiny
             \begin{center}
@@ -133,7 +134,7 @@
     \end{tabular}
     }
     
-    \par
+    \newline
     \begin{center}
     \begin{tabular}{ccm{0.73\linewidth}}
         \mds_draw_yn_boxes:n {\g_consult_others_bool} & \tl_use:N \mdsconsultotherstext\\
@@ -141,19 +142,19 @@
     \end{tabular}
     \end{center}
     
-    \par \tl_use:N \mdsprovidedetailstext
+    \tl_use:N \mdsprovidedetailstext
     
     % get height of bottom part
     \mds_set_height:NV \l_tmpa_dim \mds_disclosure_sheet_lower:
     % subtract remaining height by height of bottom part
     \dim_set:Nn \l_tmpb_dim {\pagegoal- \pagetotal - \l_tmpa_dim - 5mm}
     
-    \par\vspace*{2mm}
+    \newline\vspace*{2mm}
     \begin{minipage}[t][\l_tmpb_dim][t]{\linewidth}
         \tl_use:N \g_disclosure_detail_tl
     \end{minipage}
     
-    \par\mds_disclosure_sheet_lower:
+    \newline\mds_disclosure_sheet_lower:
     
     \group_end:
     

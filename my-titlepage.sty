@@ -26,7 +26,7 @@
     \dim_gset:cn {g_#1_ad_x_dim} {11cm}
     \dim_gset:cn {g_#1_ad_y_dim} {20cm}
     \dim_gset:cn {g_#1_ad_width_dim} {0.4\paperwidth}
-    \tl_gset:cn {g_#1_title_font_tl} {\fontsize{42}{30}\color{black!60}\scshape}
+    \tl_gset:cn {g_#1_title_font_tl} {\fontsize{42}{32}\color{black!60}\scshape}
     \tl_gset:cn {g_#1_ad_font_tl} {\Large\bfseries\color{black!80}}
 }
 
@@ -50,7 +50,20 @@
 
 \makeatletter
 
+\msg_new:nnn {mytitlepage} {notemplate} {template\ "#1"\ does\ not\ exist.}
+
+\clist_const:Nn \c_mtp_templates {brushes,checkbox,dots,koi,lotus}
+
 \cs_new:Npn \mtp_make_title:n #1 {
+    \clist_if_in:NnTF \c_mtp_templates {#1} {
+        \mtp_make_title_detail:n {#1}
+    } {
+        {\color{red} NO~TEMPLATE~ERROR}
+        \msg_error:nnn {mytitlepage} {notemplate} {#1}
+    }
+}
+
+\cs_new:Npn \mtp_make_title_detail:n #1 {
     \group_begin:
     \setlength{\parindent}{0pt}
     %\TPoptions{showboxes=true}
