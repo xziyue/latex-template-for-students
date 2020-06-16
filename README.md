@@ -10,6 +10,9 @@ Examples can be seen in [test_titlepage.pdf](./test_titlepage.pdf).
 
   ```latex
   \makecustomtitle{lotus}
+  
+  % use "nourl" option to suppress project url
+  \makecustomtitle[nourl]{lotus}
   ```
 
 - Available templates:  `brushes`, `checkbox`, `dots`, `koi`, `lotus`

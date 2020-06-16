@@ -1,13 +1,33 @@
 \RequirePackage[absolute]{textpos}
 \RequirePackage{graphicx}
 \RequirePackage{fancyhdr}
+\RequirePackage{xparse}
 \RequirePackage{expl3}
 \RequirePackage{xcolor}
+\RequirePackage{calc}
 
 
 \ExplSyntaxOn
 
-\dim_new:N \l_tmpc_dim
+\tl_new:N \g_project_github_tl 
+\tl_gset:Nn \g_project_github_tl  {https://github.com/xziyue/latex-template-for-students}
+\tl_new:N \g_output_url_tl
+
+% store width of #2 into #1
+\cs_set:Npn \mtp_set_width:Nn #1#2 {
+    \settowidth{#1}{#2}
+}
+
+\cs_set:Npn \mtp_set_height:Nn #1#2 {
+    \settototalheight{#1}{#2}
+}
+
+\cs_generate_variant:Nn \mtp_set_width:Nn {NV}
+\cs_generate_variant:Nn \mtp_set_height:Nn {NV}
+
+\dim_if_exist:NF \l_tmpc_dim {
+    \dim_new:N \l_tmpc_dim
+}
 
 % declare variables for a new style
 \cs_new:Npn \mtp_declare_new_style:n #1 {
@@ -19,6 +39,7 @@
     \dim_new:c {g_#1_ad_width_dim}
     \tl_new:c {g_#1_title_font_tl}
     \tl_new:c {g_#1_ad_font_tl}
+    \tl_new:c {g_#1_url_font_tl}
     % set default style
     \dim_gset:cn {g_#1_title_x_dim} {2cm}
     \dim_gset:cn {g_#1_title_y_dim} {3cm}
@@ -28,6 +49,7 @@
     \dim_gset:cn {g_#1_ad_width_dim} {0.4\paperwidth}
     \tl_gset:cn {g_#1_title_font_tl} {\fontsize{42}{32}\color{black!60}\scshape}
     \tl_gset:cn {g_#1_ad_font_tl} {\Large\bfseries\color{black!80}}
+    \tl_gset:cn {g_#1_url_font_tl} {\tiny\ttfamily\color{black!50}}
 }
 
 % allow variable expansion for textpos env
@@ -53,6 +75,13 @@
 \msg_new:nnn {mytitlepage} {notemplate} {template\ "#1"\ does\ not\ exist.}
 
 \clist_const:Nn \c_mtp_templates {brushes,checkbox,dots,koi,lotus}
+
+\cs_new:Npn \mtp_get_url:n #1 {
+    \group_begin:
+    \tl_use:c {g_#1_url_font_tl}
+    \tl_use:N \g_output_url_tl
+    \group_end:
+}
 
 \cs_new:Npn \mtp_make_title:n #1 {
     \clist_if_in:NnTF \c_mtp_templates {#1} {
@@ -102,6 +131,17 @@
         \end{center}
     }
     
+    \tl_if_empty:NF \g_output_url_tl {
+        \mtp_set_height:NV \l_tmpa_dim {\mtp_get_url:n {#1}}
+        \dim_set:Nn \l_tmpb_dim {\paperheight - \l_tmpa_dim - \baselineskip}
+        \mtp_textpos:nnnn {\paperwidth} {0cm} {\l_tmpb_dim} {
+            \begin{flushright}
+                \mtp_get_url:n {#1}
+            \end{flushright}
+        }
+    }
+    
+    
     \group_end:
     \null\newpage
     \pagenumbering{arabic}
@@ -109,6 +149,24 @@
 
 \makeatother
 
-\newcommand{\makecustomtitle}[1]{\mtp_make_title:n {#1}}
+\bool_new:N \g_output_url_bool
+
+\keys_define:nn {mtp} {
+    nourl .bool_gset:N = \g_output_url_bool,
+    nourl .initial:n = false,
+    nourl .default:n = true
+}
+
+\DeclareDocumentCommand{\makecustomtitle}{om}{
+    \IfNoValueF{#1}{
+         \keys_set:nn {mtp} {#1}
+    }
+    \bool_if:NTF \g_output_url_bool {
+        \tl_gset_eq:NN \g_output_url_tl \c_empty_tl
+    } {
+        \tl_gset_eq:NN \g_output_url_tl \g_project_github_tl
+    }
+    \mtp_make_title:n {#2}
+}
 
 \ExplSyntaxOff
