@@ -1,0 +1,168 @@
+\RequirePackage{color}
+\RequirePackage{tcolorbox}
+\RequirePackage{ragged2e}
+\RequirePackage{graphicx}
+\RequirePackage{datetime2}
+\RequirePackage{calc}
+\RequirePackage{array}
+\RequirePackage{environ}
+\RequirePackage{tcolorbox}
+\RequirePackage{ragged2e}
+\RequirePackage{xparse}
+\RequirePackage{expl3}
+
+
+\newcommand{\mdsconsultotherstext}{Did you consult with anyone on parts of this assignment, including other students, TAs, or the instructor?}
+\newcommand{\mdsoutsidesourcetext}{Did you consult an outside source (such as an Internet forum or a book other than the course textbook) on parts of this assignment?}
+\newcommand{\mdsprovidedetailstext}{If you answered \textbf{Yes} to one or more questions, please give the details here:}
+\newcommand{\mdsassertiontext}{By submitting this sheet, I assert that the information on this sheet is true.}
+
+\ExplSyntaxOn
+
+\tl_new:N \g_disclosure_detail_tl
+
+% this environemnt is for listing outside sources
+\NewEnviron{disclosuredetail}{\tl_gset:NV \g_disclosure_detail_tl \BODY}
+
+\bool_new:N \g_consult_others_bool
+\bool_new:N \g_outside_source_bool
+\tl_new:N \g_course_name_tl
+\tl_new:N \g_document_name_tl
+\tl_new:N \g_document_id_tl
+\tl_new:N \g_author_name_tl
+
+% store width of #2 into #1
+\cs_set:Npn \mds_set_width:Nn #1#2 {
+    \settowidth{#1}{#2}
+}
+
+\cs_set:Npn \mds_set_height:Nn #1#2 {
+    \settototalheight{#1}{#2}
+}
+
+\cs_generate_variant:Nn \mds_set_width:Nn {NV}
+\cs_generate_variant:Nn \mds_set_height:Nn {NV}
+
+\dim_if_exist:NF \l_tmpc_dim {
+    \dim_new:N \l_tmpc_dim
+}
+
+
+\keys_define:nn {mds} {
+    consultothers .bool_gset:N = \g_consult_others_bool,
+    consultothers .default:n = true,
+    consultothers .initial:n = false,
+    outsidesource .bool_gset:N = \g_outside_source_bool,
+    outsidesource .default:n = true,
+    outsidesource .initial:n = false,
+    course .tl_gset_x:N = \g_course_name_tl,
+    course .initial:n = {Sample~Course},
+    docid .tl_gset_x:N = \g_document_id_tl,
+    docid .initial:n = {N/A},
+    author .tl_gset:N = \g_author_name_tl
+}
+
+\cs_new:Npn \mds_draw_box:nnn #1#2#3 {
+    \mds_set_width:NV \l_tmpa_dim {\tcbox[left=2pt,right=2pt,top=0pt,bottom=0pt,colframe=#1,colback=#1, valign=center]{\exp_args:NV \color{#2} #3}}
+    \begin{minipage}{\l_tmpa_dim}
+        \tcbox[left=2pt,right=2pt,top=0pt,bottom=0pt,colframe=#1,colback=#1, valign=center]{
+            \exp_args:NV \color{#2} #3}
+    \end{minipage}
+}
+
+
+% draw boxes based on macro value
+\cs_new:Npn \mds_draw_yn_boxes:n #1 {
+    \bool_if:NTF {#1} {
+        \tl_gset:Nn \g_tmpa_tl {black}
+        \tl_gset:Nn \g_tmpb_tl {white}
+    } {
+        \tl_gset:Nn \g_tmpa_tl {white}
+        \tl_gset:Nn \g_tmpb_tl {black}
+    }
+    \mds_draw_box:nnn \g_tmpa_tl \g_tmpb_tl {\textbf{Yes}} &
+    \mds_draw_box:nnn \g_tmpb_tl \g_tmpa_tl {\textbf{No}}
+}
+
+\cs_new:Nn \mds_disclosure_sheet_lower: {
+    \parbox{\linewidth}{
+        \tl_use:N \mdsassertiontext
+        
+        \begin{flushright}
+            \begin{minipage}{0.5\linewidth}
+                \begin{tabular}{rl}
+                    Signature: & \tl_use:N \g_author_name_tl \\
+                    Date: & \DTMsetup{useregional}\DTMtryregional{en}{GB}\DTMToday
+                \end{tabular}
+            \end{minipage}
+        \end{flushright}
+        
+        {
+            \tiny
+            \begin{center}
+                COMPILATIOM~TIMESTAMP:~\DTMsetstyle{iso}\DTMnow
+            \end{center}
+        }
+    }
+}
+
+\DeclareDocumentCommand {\makedisclosuresheet} {m}
+{
+    \keys_set:nn {mds} {author=\@author,#1}
+    
+    \group_begin:
+    \pagenumbering{Roman}
+    \setlength{\parindent}{0pt}
+    
+    \begin{center}
+        \Large\bfseries \tl_use:N \g_course_name_tl \ Disclosure\ Sheet
+    \end{center}
+    
+    % calculate width of straightlines
+    \mds_set_width:NV \l_tmpa_dim \g_author_name_tl
+    \mds_set_width:NV \l_tmpb_dim \g_document_id_tl
+    \dim_set:Nn \l_tmpc_dim {\dim_max:nn \l_tmpa_dim \l_tmpb_dim}
+    \dim_add:Nn \l_tmpc_dim {1.5cm}
+    
+    {
+    \setlength{\tabcolsep}{0pt}
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{lcl}
+        \textbf{Name} & \textbf{:} & \underline{\makebox[\l_tmpc_dim]{\tl_use:N \g_author_name_tl}}\\
+        \textbf{ID} & \textbf{\#} & \underline{\makebox[\l_tmpc_dim]{\tl_use:N \g_document_id_tl}}
+    \end{tabular}
+    }
+    
+    \par
+    \begin{center}
+    \begin{tabular}{ccm{0.73\linewidth}}
+        \mds_draw_yn_boxes:n {\g_consult_others_bool} & \tl_use:N \mdsconsultotherstext\\
+        \mds_draw_yn_boxes:n {\g_outside_source_bool} & \tl_use:N \mdsoutsidesourcetext
+    \end{tabular}
+    \end{center}
+    
+    \par \tl_use:N \mdsprovidedetailstext
+    
+    % get height of bottom part
+    \mds_set_height:NV \l_tmpa_dim \mds_disclosure_sheet_lower:
+    % subtract remaining height by height of bottom part
+    \dim_set:Nn \l_tmpb_dim {\pagegoal- \pagetotal - \l_tmpa_dim - 5mm}
+    
+    \par\vspace*{2mm}
+    \begin{minipage}[t][\l_tmpb_dim][t]{\linewidth}
+        \tl_use:N \g_disclosure_detail_tl
+    \end{minipage}
+    
+    \par\mds_disclosure_sheet_lower:
+    
+    \group_end:
+    
+    \clearpage
+    \pagenumbering{arabic}
+}
+
+\makeatother
+
+%\DeclareDocumentCommand{cmd}{args}{def}
+
+\ExplSyntaxOff
